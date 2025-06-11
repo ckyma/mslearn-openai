@@ -3,7 +3,7 @@ import openai
 import dotenv
 
 ## Flag to show citations
-showCitations = False
+showCitations = True
 
 dotenv.load_dotenv()
 
@@ -18,7 +18,32 @@ client = openai.AzureOpenAI(
 )
 
 # Configure your data source
+text = input('\nEnter a question:\n')
 
+completion = client.chat.completions.create(
+    model=deployment,
+    messages=[
+        {
+            "role": "user",
+            "content": text,
+        },
+    ],
+    extra_body={
+        "data_sources":[
+            {
+                "type": "azure_search",
+                "parameters": {
+                    "endpoint": os.environ["AZURE_SEARCH_ENDPOINT"],
+                    "index_name": os.environ["AZURE_SEARCH_INDEX"],
+                    "authentication": {
+                        "type": "api_key",
+                        "key": os.environ["AZURE_SEARCH_KEY"],
+                    }
+                }
+            }
+        ],
+    }
+)
 
 print(completion.choices[0].message.content)
 
